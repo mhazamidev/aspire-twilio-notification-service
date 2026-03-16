@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/building-block/">
+    <Project Path="building-block/Domain.SeedWork/Domain.SeedWork.csproj" />
+  </Folder>
+  <Project Path="Notification.Api/Notification.Api.csproj" />
+  <Project Path="Notification.Application/Notification.Application.csproj" />
+  <Project Path="Notification.Domain/Notification.Domain.csproj" />
+  <Project Path="Notification.Infrastructure/Notification.Infrastructure.csproj" />
+  <Project Path="Notification.Worker/Notification.Worker.csproj" />
+  <Project Path="Notofication.Infrastructure.IoC/Notofication.Infrastructure.IoC.csproj" Id="da11c674-4d12-4c95-bd98-6c9c0e3755c1" />
+  <Project Path="TwilioAspireDemo.AppHost/TwilioAspireDemo.AppHost.csproj" />
+  <Project Path="TwilioAspireDemo.ServiceDefaults/TwilioAspireDemo.ServiceDefaults.csproj" />
+</Solution>
