@@ -1,8 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Notification.Application.Channels;
 using Notification.Application.Factories;
 using Notification.Domain.MessageLogs.Interfaces;
+using Notification.Infrastructure.Configurations;
 using Notification.Infrastructure.Persistence.Interfaces;
+using SendGrid;
 
 namespace Notofication.Infrastructure.IoC.DI;
 
@@ -16,6 +19,12 @@ public static class TwilioSetup
         services.AddScoped<INotificationChannel, VoiceChannel>();
         services.AddScoped<IOtpChannel, OtpChannel>();
         services.AddSingleton<ITwilioClientFactory, TwilioClientFactory>();
+
+        services.AddSingleton<SendGridClient>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<TwilioConfigs>>();
+            return new SendGridClient(options.Value.SendGridApiKey);
+        });
         return services;
     }
 }

@@ -12,15 +12,6 @@ public class OtpModule(ISender sender) : BaseModule(sender), ICarterModule
     {
         var mapGroup = app.MapGroup("/otp").WithTags("OTP");
 
-        mapGroup.MapPost("/send", async (SendOtpCommand request) =>
-        {
-            return await Response(request);
-        })
-            .WithName("Send")
-            .Produces(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status400BadRequest);
-
-
         mapGroup.MapPost("/verify", async (VerifyOtpCommand request) =>
         {
             return await Response(request);

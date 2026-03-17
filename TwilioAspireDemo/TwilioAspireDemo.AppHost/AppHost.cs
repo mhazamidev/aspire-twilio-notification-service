@@ -12,6 +12,8 @@ var authToken = builder.AddParameter("AuthToken", secret: true);
 var phoneNumber = builder.AddParameter("PhoneNumber", secret: true);
 var sendGridApiKey = builder.AddParameter("SendGridApiKey", secret: true);
 var verifyServiceSid = builder.AddParameter("VerifyServiceSid", secret: true);
+var mqUsername = builder.AddParameter("RabbitMQUsername", secret: true);
+var mqPassword = builder.AddParameter("RabbitMQPassword", secret: true);
 
 #endregion
 
@@ -20,9 +22,11 @@ var sql = builder.AddIdentityDatabase(password: sqlPassword);
 #endregion
 
 #region Services
+var rabbitmq = builder.AddRabbitMQService(mqUsername, mqPassword);
 
-builder.AddNotificationService(sql, accountSid, authToken, phoneNumber, sendGridApiKey, verifyServiceSid);
+builder.AddNotificationService(sql, rabbitmq, accountSid, authToken, phoneNumber, sendGridApiKey, verifyServiceSid);
 
+builder.AddNotificationWorkerService(rabbitmq);
 
 #endregion
 

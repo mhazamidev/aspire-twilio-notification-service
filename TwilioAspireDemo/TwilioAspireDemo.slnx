@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/building-block/">
+    <Project Path="building-block/BuildingBlocks.Contracts/BuildingBlocks.Contracts.csproj" Id="c3c23289-8a22-48f9-a984-3884b51974d7" />
+    <Project Path="building-block/BuildingBlocks.Messaging/BuildingBlocks.Messaging.csproj" Id="14297989-b2c4-405f-9c90-718627388a71" />
+    <Project Path="building-block/BuildingBlocks.Utility/BuildingBlocks.Utility.csproj" Id="a1f2545e-0dbe-4e3c-a65f-f87d0c78d5fc" />
     <Project Path="building-block/Domain.SeedWork/Domain.SeedWork.csproj" />
   </Folder>
   <Project Path="Notification.Api/Notification.Api.csproj" />
