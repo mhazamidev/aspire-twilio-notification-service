@@ -1,13 +1,14 @@
 ﻿using BuildingBlocks.Contracts.DTO;
 using BuildingBlocks.Contracts.Notification.Contracts;
 using BuildingBlocks.Messaging;
+using Notification.Infrastructure.Persistence.Interfaces;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 
 namespace Notification.Application.Messaging;
 
-public class NotificationPublisher(IConnection connection)
+public class NotificationPublisher(IConnection connection) : INotificationPublisher
 {
     public async Task PublishAsync(NotificationDto dto, string routingKey)
     {
@@ -26,4 +27,6 @@ public class NotificationPublisher(IConnection connection)
             routingKey: routingKey,
             body: body);
     }
+
+  
 }

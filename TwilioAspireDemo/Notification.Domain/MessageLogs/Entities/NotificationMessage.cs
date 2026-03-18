@@ -1,4 +1,5 @@
 ﻿using Domain.SeedWork;
+using Domain.SeedWork.Exceptions;
 using Notification.Domain.MessageLogs.Enums;
 using Notification.Domain.MessageLogs.ValueObjects;
 
@@ -30,6 +31,12 @@ public class NotificationMessage : AggregateRoot<NotificationMessageId>
 
     public static NotificationMessage Create(string recipient, string content, MessageChannel channel)
     {
+        if (string.IsNullOrEmpty(recipient))
+            throw new DomainException("Recipient cannot be null or empty.");
+
+        if (string.IsNullOrEmpty(content))
+            throw new DomainException("Content cannot be null or empty.");
+
         return new NotificationMessage
         (
             NotificationMessageId.NewId(),
@@ -50,6 +57,7 @@ public class NotificationMessage : AggregateRoot<NotificationMessageId>
     {
         Status = MessageStatus.Failed;
     }
+
 }
 
 

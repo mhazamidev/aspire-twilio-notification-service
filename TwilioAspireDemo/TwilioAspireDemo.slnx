@@ -5,6 +5,11 @@
     <Project Path="building-block/BuildingBlocks.Utility/BuildingBlocks.Utility.csproj" Id="a1f2545e-0dbe-4e3c-a65f-f87d0c78d5fc" />
     <Project Path="building-block/Domain.SeedWork/Domain.SeedWork.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Application.Test/Application.Test.csproj" Id="55cfee60-4b75-4573-8ec3-4da4030ce5d2" />
+    <Project Path="Tests/Domain.Test/Domain.Test.csproj" Id="a6166cc1-1f2d-465d-9614-f918e616b368" />
+    <Project Path="Tests/ServiceWorker.Test/ServiceWorker.Test.csproj" Id="b359da17-1539-475d-9bc3-ff8852e730a5" />
+  </Folder>
   <Project Path="Notification.Api/Notification.Api.csproj" />
   <Project Path="Notification.Application/Notification.Application.csproj" />
   <Project Path="Notification.Domain/Notification.Domain.csproj" />

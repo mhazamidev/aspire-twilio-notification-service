@@ -7,9 +7,9 @@ namespace Notification.Application.Services;
 
 public class NotificationService : INotificationService
 {
-    private readonly NotificationPublisher _publisher;
+    private readonly INotificationPublisher _publisher;
 
-    public NotificationService(NotificationPublisher publisher)
+    public NotificationService(INotificationPublisher publisher)
     {
         _publisher = publisher;
     }

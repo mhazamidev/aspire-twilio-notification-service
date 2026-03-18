@@ -6,4 +6,5 @@ public class NotificationEnvelope
 {
     public NotificationDto Payload { get; set; }
     public int RetryCount { get; set; } = 0;
+    public string RoutingKey { get; set; }
 }
