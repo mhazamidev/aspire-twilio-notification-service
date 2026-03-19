@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Notification.Domain.MessageLogs.Enums;
+﻿namespace Notification.Domain.MessageLogs.Enums;
 
 public enum MessageStatus
 {

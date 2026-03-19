@@ -1,7 +1,6 @@
 ﻿using BuildingBlocks.Contracts.DTO;
 using BuildingBlocks.Messaging;
 using Moq;
-using Notification.Application.Messaging;
 using Notification.Application.Services;
 using Notification.Infrastructure.Persistence.Interfaces;
 

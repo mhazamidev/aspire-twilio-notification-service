@@ -1,6 +1,5 @@
 ﻿using BuildingBlocks.Contracts.DTO;
 using BuildingBlocks.Messaging;
-using Notification.Application.Messaging;
 using Notification.Infrastructure.Persistence.Interfaces;
 
 namespace Notification.Application.Services;

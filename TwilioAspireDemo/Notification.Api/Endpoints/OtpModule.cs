@@ -1,7 +1,6 @@
 ﻿using Carter;
 using MediatR;
 using Notification.Api.Base;
-using Notification.Application.Features.SentOtp;
 using Notification.Application.Features.VerifyOtp;
 
 namespace Notification.Api.Endpoints;

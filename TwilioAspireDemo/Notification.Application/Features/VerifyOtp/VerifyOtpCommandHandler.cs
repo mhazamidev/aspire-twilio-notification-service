@@ -1,7 +1,5 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Options;
-using Notification.Application.Channels;
-using Notification.Domain.MessageLogs.Enums;
 using Notification.Infrastructure.Configurations;
 using Notification.Infrastructure.Persistence.Interfaces;
 

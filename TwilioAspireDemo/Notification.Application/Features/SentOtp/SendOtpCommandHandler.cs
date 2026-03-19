@@ -3,8 +3,6 @@ using Notification.Application.Services;
 using Notification.Domain.MessageLogs.Entities;
 using Notification.Domain.MessageLogs.Enums;
 using Notification.Domain.MessageLogs.Interfaces;
-using Notification.Domain.MessageLogs.ValueObjects;
-using Notification.Infrastructure.Persistence.Interfaces;
 using Notification.Infrastructure.Persistence.UOW;
 
 namespace Notification.Application.Features.SentOtp;

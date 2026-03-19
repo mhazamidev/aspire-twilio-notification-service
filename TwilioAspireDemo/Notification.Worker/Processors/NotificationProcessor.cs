@@ -1,21 +1,20 @@
 ﻿using BuildingBlocks.Contracts.Notification.Contracts;
 using BuildingBlocks.Utility;
-using MediatR;
-using Notification.Application.Features.Email;
-using Notification.Application.Features.SentOtp;
-using Notification.Application.Features.Sms;
 using Notification.Domain.MessageLogs.Enums;
+using Notification.Worker.Interfaces;
 
 namespace Notification.Worker.Processors;
 
 public class NotificationProcessor
 {
-    private readonly ISender _sender;
+    private readonly INotificationHandlerFactory _factory;
     private readonly ILogger<NotificationProcessor> _logger;
 
-    public NotificationProcessor(ISender sender, ILogger<NotificationProcessor> logger)
+    public NotificationProcessor(
+        INotificationHandlerFactory factory,
+        ILogger<NotificationProcessor> logger)
     {
-        _sender = sender;
+        _factory = factory;
         _logger = logger;
     }
 
@@ -33,18 +32,8 @@ public class NotificationProcessor
             throw;
         }
 
-        switch (messageChannel)
-        {
-            case MessageChannel.Email:
-                await _sender.Send(new SendEmailCommand(envelope.Payload.Recipient, envelope.Payload.Content));
-                break;
-            case MessageChannel.Sms:
-                await _sender.Send(new SendSMSCommand(envelope.Payload.Recipient, envelope.Payload.Content));
-                break;
-            case MessageChannel.Otp:
-                await _sender.Send(new SendOtpCommand(envelope.Payload.Recipient));
-                break;
-        }
+        var handler = _factory.GetHandler(messageChannel);
 
+        await handler.HandleAsync(envelope.Payload);
     }
 }

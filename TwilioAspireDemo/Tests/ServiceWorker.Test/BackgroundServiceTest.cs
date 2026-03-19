@@ -1,13 +1,11 @@
 ﻿using BuildingBlocks.Contracts.DTO;
 using BuildingBlocks.Contracts.Notification.Contracts;
 using BuildingBlocks.Utility;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Notification.Application.Features.Email;
-using Notification.Application.Features.SentOtp;
-using Notification.Application.Features.Sms;
 using Notification.Domain.MessageLogs.Enums;
+using Notification.Worker.Factories;
+using Notification.Worker.Interfaces;
 using Notification.Worker.Processors;
 
 namespace ServiceWorker.Test
@@ -15,13 +13,54 @@ namespace ServiceWorker.Test
     public class BackgroundServiceTest
     {
         [Fact]
-        public async Task ProcessAsync_Should_Send_Email_Command()
+        public async Task ProcessAsync_Should_Use_Correct_Handler()
         {
             // Arrange
-            var senderMock = new Mock<ISender>();
+            var handlerMock = new Mock<INotificationHandler>();
+
+            var factoryMock = new Mock<INotificationHandlerFactory>();
+
+            factoryMock.Setup(x =>
+                x.GetHandler(MessageChannel.Sms))
+                .Returns(handlerMock.Object);
+
             var loggerMock = new Mock<ILogger<NotificationProcessor>>();
 
-            var processor = new NotificationProcessor(senderMock.Object, loggerMock.Object);
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object);
+
+            var envelope = new NotificationEnvelope
+            {
+                Payload = new NotificationDto
+                {
+                    Channel = "Sms"
+                }
+            };
+
+            // Act
+            await processor.ProcessAsync(envelope);
+
+            // Assert
+            handlerMock.Verify(x =>
+                x.HandleAsync(It.IsAny<NotificationDto>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_Should_Send_Email_Handler()
+        {
+            // Arrange
+            var handlerMock = new Mock<INotificationHandler>();
+
+            var factoryMock = new Mock<INotificationHandlerFactory>();
+
+            factoryMock.Setup(x =>
+                x.GetHandler(MessageChannel.Email))
+                .Returns(handlerMock.Object);
+
+
+            var loggerMock = new Mock<ILogger<NotificationProcessor>>();
+
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object);
 
             var envelope = new NotificationEnvelope
             {
@@ -37,21 +76,29 @@ namespace ServiceWorker.Test
             await processor.ProcessAsync(envelope);
 
             // Assert
-            senderMock.Verify(x =>
-                x.Send(It.Is<SendEmailCommand>(cmd =>
-                    cmd.Email == "test@test.com" &&
-                    cmd.Message == "hello")),
+            handlerMock.Verify(x =>
+                x.HandleAsync(It.Is<NotificationDto>(cmd =>
+                    cmd.Recipient == "test@test.com" &&
+                    cmd.Content == "hello"&&
+                    cmd.Channel == "Email")),
                 Times.Once);
         }
 
         [Fact]
-        public async Task ProcessAsync_Should_Send_Sms_Command()
+        public async Task ProcessAsync_Should_Call_Sms_Handler()
         {
-            var senderMock = new Mock<ISender>();
+            // Arrange
+            var handlerMock = new Mock<INotificationHandler>();
+
+            var factoryMock = new Mock<INotificationHandlerFactory>();
+
+            factoryMock.Setup(x =>
+                x.GetHandler(MessageChannel.Sms))
+                .Returns(handlerMock.Object);
 
             var loggerMock = new Mock<ILogger<NotificationProcessor>>();
 
-            var processor = new NotificationProcessor(senderMock.Object, loggerMock.Object);
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object);
 
             var envelope = new NotificationEnvelope
             {
@@ -63,22 +110,31 @@ namespace ServiceWorker.Test
                 }
             };
 
+            // Act
             await processor.ProcessAsync(envelope);
 
-            senderMock.Verify(x =>
-                x.Send(It.Is<SendSMSCommand>(cmd =>
-                    cmd.Phone == "09123456789" &&
-                    cmd.Message == "code")),
+            // Assert
+            handlerMock.Verify(x =>
+                x.HandleAsync(It.Is<NotificationDto>(d =>
+                    d.Recipient == "09123456789" &&
+                    d.Content == "code")),
                 Times.Once);
         }
-
         [Fact]
         public async Task ProcessAsync_Should_Send_Otp_Command()
         {
-            var senderMock = new Mock<ISender>();
+            var handlerMock = new Mock<INotificationHandler>();
+
+            var factoryMock = new Mock<INotificationHandlerFactory>();
+
+            factoryMock.Setup(x =>
+                x.GetHandler(MessageChannel.Otp))
+                .Returns(handlerMock.Object);
+
+
             var loggerMock = new Mock<ILogger<NotificationProcessor>>();
 
-            var processor = new NotificationProcessor(senderMock.Object, loggerMock.Object);
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object);
 
             var envelope = new NotificationEnvelope
             {
@@ -91,20 +147,28 @@ namespace ServiceWorker.Test
 
             await processor.ProcessAsync(envelope);
 
-            senderMock.Verify(x =>
-                x.Send(It.Is<SendOtpCommand>(cmd =>
-                    cmd.Recipient == "09123456789")),
+            handlerMock.Verify(x =>
+                x.HandleAsync(It.Is<NotificationDto>(cmd =>
+                    cmd.Recipient == "09123456789" &&
+                    cmd.Channel == "Otp")),
                 Times.Once);
         }
 
         [Fact]
-        public async Task ProcessAsync_Should_Not_Send_When_Channel_Invalid()
+        public async Task ProcessAsync_Should_Throw_When_Channel_Invalid()
         {
-            var senderMock = new Mock<ISender>();
+            // Arrange
+            var handlerMock = new Mock<INotificationHandler>();
+
+            var factoryMock = new Mock<INotificationHandlerFactory>();
+
+            factoryMock.Setup(x =>
+                x.GetHandler(MessageChannel.Sms))
+                .Returns(handlerMock.Object);
 
             var loggerMock = new Mock<ILogger<NotificationProcessor>>();
 
-            var processor = new NotificationProcessor(senderMock.Object, loggerMock.Object);
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object);
 
             var envelope = new NotificationEnvelope
             {
@@ -116,13 +180,14 @@ namespace ServiceWorker.Test
                 }
             };
 
-            await processor.ProcessAsync(envelope);
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() =>
+                processor.ProcessAsync(envelope));
 
-            senderMock.Verify(x =>
-                x.Send(It.IsAny<object>()),
+            handlerMock.Verify(x =>
+                x.HandleAsync(It.IsAny<NotificationDto>()),
                 Times.Never);
         }
-
 
         [Theory]
         [InlineData("Email", MessageChannel.Email)]

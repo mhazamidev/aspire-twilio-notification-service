@@ -1,11 +1,5 @@
 ﻿using BuildingBlocks.Contracts.Notification.Contracts;
 using BuildingBlocks.Messaging;
-using BuildingBlocks.Utility;
-using MediatR;
-using Notification.Application.Features.Email;
-using Notification.Application.Features.SentOtp;
-using Notification.Application.Features.Sms;
-using Notification.Domain.MessageLogs.Enums;
 using Notification.Worker.Processors;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
