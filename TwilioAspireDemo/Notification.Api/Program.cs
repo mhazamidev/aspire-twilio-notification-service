@@ -3,7 +3,6 @@ using Identity.API.Extensions;
 using Notification.Api.Extensions;
 using Notofication.Infrastructure.IoC.DI;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
@@ -19,9 +18,9 @@ builder.Services
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddMediatRSetup();
 builder.Services.AddServices();
-var connection = builder.Configuration.GetSection("ConnectionStrings:rabbitmq")?.Value;
-builder.AddRabbitMQClient(connectionName: connection);
+builder.AddRabbitMQ();
 
+builder.Services.AddOutboxWorker();
 
 var app = builder.Build();
 

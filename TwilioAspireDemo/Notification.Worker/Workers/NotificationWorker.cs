@@ -1,5 +1,6 @@
-﻿using BuildingBlocks.Contracts.Notification.Contracts;
+﻿using BuildingBlocks.Contracts.Contracts.Notification;
 using BuildingBlocks.Messaging;
+using Notification.Infrastructure.Persistence.Interfaces;
 using Notification.Worker.Processors;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -13,7 +14,8 @@ namespace Notification.Worker.Workers;
 public class NotificationWorker(
     ILogger<NotificationWorker> logger,
     IConnection connection,
-    IServiceScopeFactory scopeFactory) : BackgroundService
+    IServiceScopeFactory scopeFactory,
+    IRetryHandler retryHandler) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -95,37 +97,11 @@ public class NotificationWorker(
 
                 if (envelope != null)
                 {
-                    envelope.RetryCount++;
+                    using var scope = scopeFactory.CreateScope();
 
-                    var newBody = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(envelope));
+                    var retryHandler = scope.ServiceProvider.GetRequiredService<IRetryHandler>();
 
-                    try
-                    {
-                        if (envelope.RetryCount <= 3)
-                        {
-                            await channel.BasicPublishAsync(
-                                exchange: "",
-                                routingKey: QueueNames.Retry,
-                                body: newBody);
-
-                            logger.LogWarning("Message sent to Retry queue");
-                        }
-                        else
-                        {
-                            await channel.BasicPublishAsync(
-                                exchange: Exchanges.DeadLetter,
-                                routingKey: RoutingKeys.Dlq,
-                                body: newBody);
-
-                            logger.LogError("Message moved to DLQ");
-                        }
-
-                        await channel.BasicAckAsync(eventArgs.DeliveryTag, false);
-                    }
-                    catch (Exception publishEx)
-                    {
-                        logger.LogCritical(publishEx, "Failed to publish retry/DLQ");
-                    }
+                    await retryHandler.HandleAsync(envelope);
                 }
                 else
                 {

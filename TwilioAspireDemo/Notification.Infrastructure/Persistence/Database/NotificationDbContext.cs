@@ -8,7 +8,10 @@ public class NotificationDbContext : DbContext
     public NotificationDbContext(DbContextOptions<NotificationDbContext> options) : base(options)
     {
     }
+
     public virtual DbSet<NotificationMessage> Notifications => Set<NotificationMessage>();
+    public virtual DbSet<ProcessedMessage> ProcessedMessages => Set<ProcessedMessage>();
+    public virtual DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

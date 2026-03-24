@@ -1,4 +1,4 @@
-﻿namespace BuildingBlocks.Contracts.DTO;
+﻿namespace BuildingBlocks.Contracts.Contracts.Notification;
 
 public class NotificationDto
 {

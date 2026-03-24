@@ -2,7 +2,7 @@
 
 namespace Notification.Infrastructure.Persistence.Interfaces;
 
-public interface INotificationPublisher
+public interface IRetryHandler
 {
-    Task PublishAsync(NotificationDto dto, string routingKey);
+    Task HandleAsync(NotificationEnvelope envelope);
 }

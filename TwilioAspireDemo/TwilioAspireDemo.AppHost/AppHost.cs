@@ -26,7 +26,7 @@ var rabbitmq = builder.AddRabbitMQService(mqUsername, mqPassword);
 
 builder.AddNotificationService(sql, rabbitmq, accountSid, authToken, phoneNumber, sendGridApiKey, verifyServiceSid);
 
-builder.AddNotificationWorkerService(rabbitmq);
+builder.AddNotificationWorkerService(sql, rabbitmq);
 
 #endregion
 

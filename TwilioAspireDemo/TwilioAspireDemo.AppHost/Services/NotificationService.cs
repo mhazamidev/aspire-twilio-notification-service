@@ -17,7 +17,6 @@ public static class NotificationService
         builder.AddProject<Projects.Notification_Api>("notification-api")
             .WithReference(database)
             .WithReference(rabbitMQ)
-            .WithEnvironment("rabbitMQConnection", rabbitMQ.Resource.Name)
             .WithTwilio(accountSid, authToken, fromNumber, sendGridApiKey, verifyServiceSid);
     }
 }

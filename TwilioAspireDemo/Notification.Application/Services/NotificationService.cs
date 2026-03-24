@@ -1,4 +1,4 @@
-﻿using BuildingBlocks.Contracts.DTO;
+﻿using BuildingBlocks.Contracts.Contracts.Notification;
 using BuildingBlocks.Messaging;
 using Notification.Infrastructure.Persistence.Interfaces;
 

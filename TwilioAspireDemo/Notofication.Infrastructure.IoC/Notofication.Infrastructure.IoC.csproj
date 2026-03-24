@@ -8,8 +8,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
-		<PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="13.1.2" />
-		<PackageReference Include="Aspire.RabbitMQ.Client" Version="13.1.2" />
+		<PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="13.2.0" />
+		<PackageReference Include="Aspire.RabbitMQ.Client" Version="13.2.0" />
 	</ItemGroup>
 	
 	<ItemGroup>

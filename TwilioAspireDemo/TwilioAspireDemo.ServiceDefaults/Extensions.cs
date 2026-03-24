@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ServiceDiscovery;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using BuildingBlocks.Messaging.Messaging.Extensions;
+
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -40,6 +41,9 @@ public static class Extensions
         // {
         //     options.AllowedSchemes = ["https"];
         // });
+
+        builder.Services.AddMessaging();
+
 
         return builder;
     }

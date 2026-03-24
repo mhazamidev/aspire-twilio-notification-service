@@ -1,4 +1,4 @@
-﻿using BuildingBlocks.Contracts.DTO;
+﻿using BuildingBlocks.Contracts.Contracts.Notification;
 using MediatR;
 using Notification.Application.Features.Sms;
 using Notification.Domain.MessageLogs.Enums;

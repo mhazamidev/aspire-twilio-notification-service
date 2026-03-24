@@ -1,4 +1,4 @@
-﻿using BuildingBlocks.Contracts.DTO;
+﻿using BuildingBlocks.Contracts.Contracts.Notification;
 using Notification.Domain.MessageLogs.Enums;
 
 namespace Notification.Worker.Interfaces;

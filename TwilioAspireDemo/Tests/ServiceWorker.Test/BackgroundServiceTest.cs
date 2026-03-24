@@ -1,10 +1,14 @@
-﻿using BuildingBlocks.Contracts.DTO;
-using BuildingBlocks.Contracts.Notification.Contracts;
+﻿using BuildingBlocks.Contracts.Contracts.Notification;
+using BuildingBlocks.Messaging;
+using BuildingBlocks.Messaging.Messaging.Abstractions;
 using BuildingBlocks.Utility;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Notification.Application.Messaging;
 using Notification.Domain.MessageLogs.Enums;
-using Notification.Worker.Factories;
+using Notification.Infrastructure.Persistence;
+using Notification.Infrastructure.Persistence.Database;
 using Notification.Worker.Interfaces;
 using Notification.Worker.Processors;
 
@@ -15,7 +19,6 @@ namespace ServiceWorker.Test
         [Fact]
         public async Task ProcessAsync_Should_Use_Correct_Handler()
         {
-            // Arrange
             var handlerMock = new Mock<INotificationHandler>();
 
             var factoryMock = new Mock<INotificationHandlerFactory>();
@@ -26,20 +29,21 @@ namespace ServiceWorker.Test
 
             var loggerMock = new Mock<ILogger<NotificationProcessor>>();
 
-            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object);
+            var db = CreateDbContext();
+
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object, db);
 
             var envelope = new NotificationEnvelope
             {
+                MessageId = Guid.NewGuid(),
                 Payload = new NotificationDto
                 {
                     Channel = "Sms"
                 }
             };
 
-            // Act
             await processor.ProcessAsync(envelope);
 
-            // Assert
             handlerMock.Verify(x =>
                 x.HandleAsync(It.IsAny<NotificationDto>()),
                 Times.Once);
@@ -52,6 +56,7 @@ namespace ServiceWorker.Test
             var handlerMock = new Mock<INotificationHandler>();
 
             var factoryMock = new Mock<INotificationHandlerFactory>();
+            var db = CreateDbContext();
 
             factoryMock.Setup(x =>
                 x.GetHandler(MessageChannel.Email))
@@ -60,7 +65,7 @@ namespace ServiceWorker.Test
 
             var loggerMock = new Mock<ILogger<NotificationProcessor>>();
 
-            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object);
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object, db);
 
             var envelope = new NotificationEnvelope
             {
@@ -91,6 +96,7 @@ namespace ServiceWorker.Test
             var handlerMock = new Mock<INotificationHandler>();
 
             var factoryMock = new Mock<INotificationHandlerFactory>();
+            var db = CreateDbContext();
 
             factoryMock.Setup(x =>
                 x.GetHandler(MessageChannel.Sms))
@@ -98,7 +104,7 @@ namespace ServiceWorker.Test
 
             var loggerMock = new Mock<ILogger<NotificationProcessor>>();
 
-            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object);
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object, db);
 
             var envelope = new NotificationEnvelope
             {
@@ -120,12 +126,14 @@ namespace ServiceWorker.Test
                     d.Content == "code")),
                 Times.Once);
         }
+
         [Fact]
         public async Task ProcessAsync_Should_Send_Otp_Command()
         {
             var handlerMock = new Mock<INotificationHandler>();
 
             var factoryMock = new Mock<INotificationHandlerFactory>();
+            var db = CreateDbContext();
 
             factoryMock.Setup(x =>
                 x.GetHandler(MessageChannel.Otp))
@@ -134,7 +142,7 @@ namespace ServiceWorker.Test
 
             var loggerMock = new Mock<ILogger<NotificationProcessor>>();
 
-            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object);
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object, db);
 
             var envelope = new NotificationEnvelope
             {
@@ -161,6 +169,7 @@ namespace ServiceWorker.Test
             var handlerMock = new Mock<INotificationHandler>();
 
             var factoryMock = new Mock<INotificationHandlerFactory>();
+            var db = CreateDbContext();
 
             factoryMock.Setup(x =>
                 x.GetHandler(MessageChannel.Sms))
@@ -168,7 +177,7 @@ namespace ServiceWorker.Test
 
             var loggerMock = new Mock<ILogger<NotificationProcessor>>();
 
-            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object);
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object, db);
 
             var envelope = new NotificationEnvelope
             {
@@ -187,6 +196,85 @@ namespace ServiceWorker.Test
             handlerMock.Verify(x =>
                 x.HandleAsync(It.IsAny<NotificationDto>()),
                 Times.Never);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_Should_Not_Process_Duplicate_Message()
+        {
+            var handlerMock = new Mock<INotificationHandler>();
+
+            var factoryMock = new Mock<INotificationHandlerFactory>();
+
+            factoryMock.Setup(x =>
+                x.GetHandler(MessageChannel.Sms))
+                .Returns(handlerMock.Object);
+
+            var loggerMock = new Mock<ILogger<NotificationProcessor>>();
+
+            var db = CreateDbContext();
+
+            var messageId = Guid.NewGuid();
+
+            db.ProcessedMessages.Add(new ProcessedMessage
+            {
+                MessageId = messageId,
+                ProcessedAt = DateTime.UtcNow
+            });
+
+            await db.SaveChangesAsync();
+
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object, db);
+
+            var envelope = new NotificationEnvelope
+            {
+                MessageId = messageId,
+                Payload = new NotificationDto
+                {
+                    Channel = "Sms"
+                }
+            };
+
+            await processor.ProcessAsync(envelope);
+
+            handlerMock.Verify(x =>
+                x.HandleAsync(It.IsAny<NotificationDto>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_Should_Save_ProcessedMessage()
+        {
+            var handlerMock = new Mock<INotificationHandler>();
+
+            var factoryMock = new Mock<INotificationHandlerFactory>();
+
+            factoryMock.Setup(x =>
+                x.GetHandler(MessageChannel.Sms))
+                .Returns(handlerMock.Object);
+
+            var loggerMock = new Mock<ILogger<NotificationProcessor>>();
+
+            var db = CreateDbContext();
+
+            var messageId = Guid.NewGuid();
+
+            var processor = new NotificationProcessor(factoryMock.Object, loggerMock.Object, db);
+
+            var envelope = new NotificationEnvelope
+            {
+                MessageId = messageId,
+                Payload = new NotificationDto
+                {
+                    Channel = "Sms"
+                }
+            };
+
+            await processor.ProcessAsync(envelope);
+
+            var exists = await db.ProcessedMessages
+                .AnyAsync(x => x.MessageId == messageId);
+
+            Assert.True(exists);
         }
 
         [Theory]
@@ -217,6 +305,54 @@ namespace ServiceWorker.Test
 
             Assert.Throws<ArgumentException>(() =>
                 input.GetEnumValue<MessageChannel>());
+        }
+
+        [Fact]
+        public async Task RetryHandler_Should_Send_To_DLQ_When_Max_Retry_Reached()
+        {
+            var eventBusMock = new Mock<IEventBus>();
+            var log = new Mock<ILogger<RetryHandler>>();
+
+            var handler = new RetryHandler(eventBusMock.Object, log.Object);
+
+            var envelope = new NotificationEnvelope
+            {
+                RetryCount = 3
+            };
+
+            await handler.HandleAsync(envelope);
+
+            eventBusMock.Verify(x =>
+                x.PublishAsync(It.IsAny<string>(), RoutingKeys.Dlq),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task RetryHandler_Should_Send_To_Retry_Queue()
+        {
+            var eventBusMock = new Mock<IEventBus>();
+            var log = new Mock<ILogger<RetryHandler>>();
+
+            var handler = new RetryHandler(eventBusMock.Object, log.Object);
+
+            var envelope = new NotificationEnvelope
+            {
+                RetryCount = 1
+            };
+
+            await handler.HandleAsync(envelope);
+
+            eventBusMock.Verify(x =>
+                x.PublishAsync(It.IsAny<string>(), QueueNames.Retry),
+                Times.Once);
+        }
+        private NotificationDbContext CreateDbContext()
+        {
+            var options = new DbContextOptionsBuilder<NotificationDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            return new NotificationDbContext(options);
         }
     }
 }
