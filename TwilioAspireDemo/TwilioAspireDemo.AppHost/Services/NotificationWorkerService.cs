@@ -8,7 +8,7 @@ public static class NotificationWorkerService
        IResourceBuilder<RabbitMQServerResource> rabbitMQ)
     {
         builder.AddProject<Projects.Notification_Worker>("notification-worker")
-            .WithReference(database)
-            .WithReference(rabbitMQ);
+            .WithReference(rabbitMQ)
+            .WithReference(database);
     }
 }

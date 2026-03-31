@@ -14,14 +14,13 @@ namespace Notification.Worker.Workers;
 public class NotificationWorker(
     ILogger<NotificationWorker> logger,
     IConnection connection,
-    IServiceScopeFactory scopeFactory,
-    IRetryHandler retryHandler) : BackgroundService
+    IServiceScopeFactory scopeFactory) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var channel = await connection.CreateChannelAsync();
+        await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
 
-       
         await channel.ExchangeDeclareAsync(
             exchange: Exchanges.Notification,
             type: ExchangeType.Topic,
@@ -98,9 +97,7 @@ public class NotificationWorker(
                 if (envelope != null)
                 {
                     using var scope = scopeFactory.CreateScope();
-
                     var retryHandler = scope.ServiceProvider.GetRequiredService<IRetryHandler>();
-
                     await retryHandler.HandleAsync(envelope);
                 }
                 else
@@ -109,9 +106,9 @@ public class NotificationWorker(
                         exchange: Exchanges.DeadLetter,
                         routingKey: RoutingKeys.Dlq,
                         body: body);
-
-                    await channel.BasicAckAsync(eventArgs.DeliveryTag, false);
                 }
+
+                await channel.BasicAckAsync(eventArgs.DeliveryTag, false);
             }
         };
 
