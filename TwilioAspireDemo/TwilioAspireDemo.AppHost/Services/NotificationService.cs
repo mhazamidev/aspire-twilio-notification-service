@@ -15,6 +15,7 @@ public static class NotificationService
         IResourceBuilder<ParameterResource> verifyServiceSid)
     {
         builder.AddProject<Projects.Notification_Api>("notification-api")
+            .WaitFor(database)
             .WithReference(database)
             .WithReference(rabbitMQ)
             .WithTwilio(accountSid, authToken, fromNumber, sendGridApiKey, verifyServiceSid);
